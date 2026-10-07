@@ -404,6 +404,38 @@
 
   .exclude-add { display: flex; gap: 6px; }
 
+  .playing {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 5px;
+    font-size: 11.5px;
+    color: var(--muted);
+  }
+
+  .playing-label { white-space: nowrap; }
+
+  .suggest {
+    border: 1px dashed var(--border);
+    background: transparent;
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 1px 9px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: color .1s, border-color .1s, background .1s;
+  }
+
+  .suggest::before { content: "+ "; color: var(--accent); font-weight: 700; }
+
+  .suggest:hover {
+    color: var(--text);
+    border-style: solid;
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
   .exclude-add input {
     font: inherit;
     font-size: 12px;
@@ -427,7 +459,7 @@
     .option:nth-child(odd) { border-right: none; }
     .option.wide { flex-direction: column; align-items: stretch; }
     .exclude { align-items: stretch; }
-    .chips { justify-content: flex-start; }
+    .chips, .playing { justify-content: flex-start; }
   }
 
   .seg { display: inline-flex; gap: 3px; }
@@ -537,15 +569,18 @@
       <div class="option wide">
         <div class="exclude-text">
           <div class="label">Not controlled by deej.unmapped</div>
-          <div class="hint">These apps keep their own volume, even with a slider set to deej.unmapped</div>
+          <div class="hint">A slider set to deej.unmapped controls every app that doesn't have its own slider. Apps listed here are skipped, so they keep their own volume.</div>
         </div>
         <div class="exclude">
           <div id="exclude-chips" class="chips"></div>
           <form id="exclude-form" class="exclude-add">
-            <input id="exclude-input" list="audio-apps" placeholder="App name, e.g. mpvnet.exe" autocomplete="off" spellcheck="false">
-            <datalist id="audio-apps"></datalist>
+            <input id="exclude-input" placeholder="Type an app name, e.g. mpvnet" autocomplete="off" spellcheck="false">
             <button class="btn" type="submit">Add</button>
           </form>
+          <div id="playing" class="playing">
+            <span class="playing-label" title="Apps with audio open right now. Click one to exclude it">Playing now, click to exclude:</span>
+            <span id="playing-apps" class="chips"></span>
+          </div>
         </div>
       </div>
     </div>
@@ -952,7 +987,8 @@
 
   const excludeChips = $("#exclude-chips");
   const excludeInput = $("#exclude-input");
-  const audioAppsList = $("#audio-apps");
+  const playingEl = $("#playing");
+  const playingApps = $("#playing-apps");
   let excluded = [];
   let excludeHoldUntil = 0;
 
@@ -983,22 +1019,35 @@
     if (button) saveExcluded(excluded.filter(app => app !== button.dataset.app));
   });
 
+  playingApps.addEventListener("click", e => {
+    const button = e.target.closest("button[data-app]");
+    if (button && !excluded.includes(button.dataset.app)) saveExcluded([...excluded, button.dataset.app]);
+  });
+
   function renderExcluded() {
     const html = excluded.length
-      ? excluded.map(app => `<span class="chip">${esc(app)}<button type="button" data-app="${esc(app)}" title="Remove">×</button></span>`).join("")
+      ? excluded.map(app => `<span class="chip" title="${esc(app)}">${esc(app.replace(/\.exe$/, ""))}<button type="button" data-app="${esc(app)}" title="Remove">×</button></span>`).join("")
       : `<span class="none">No apps excluded</span>`;
     if (excludeChips.dataset.html !== html) {
       excludeChips.innerHTML = html;
       excludeChips.dataset.html = html;
     }
 
-    // suggest apps that are playing audio right now
-    const suggestions = (state ? state.audioApps : []).filter(app => !excluded.includes(app));
-    const options = suggestions.map(app => `<option value="${esc(app)}">`).join("");
-    if (audioAppsList.dataset.html !== options) {
-      audioAppsList.innerHTML = options;
-      audioAppsList.dataset.html = options;
+    // offer apps playing audio right now, leaving out ones already excluded or on their own slider
+    // (deej.unmapped never touches those anyway)
+    const onSliders = new Set();
+    for (const slider of (state ? state.sliders : [])) {
+      for (const target of slider.targets) onSliders.add(target.toLowerCase());
     }
+
+    const suggestions = (state ? state.audioApps : []).filter(app => !excluded.includes(app) && !onSliders.has(app));
+    const buttons = suggestions.map(app =>
+      `<button type="button" class="suggest" data-app="${esc(app)}" title="Exclude ${esc(app)}">${esc(app.replace(/\.exe$/, ""))}</button>`).join("");
+    if (playingApps.dataset.html !== buttons) {
+      playingApps.innerHTML = buttons;
+      playingApps.dataset.html = buttons;
+    }
+    playingEl.style.display = suggestions.length ? "" : "none";
   }
 
   function renderOptions() {
