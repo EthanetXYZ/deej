@@ -907,7 +907,23 @@
       state = await window.deejState();
       renderOptions();
       renderRows();
+      maybeFitWindow();
     } catch (_) { /* try again next tick */ }
+  }
+
+  // size the window to its content: fully on first show, then only growing when sliders are added,
+  // so a size the user picked isn't undone
+  let fittedRows = -1;
+  function maybeFitWindow() {
+    if (typeof window.deejFitHeight !== "function" || rows.size === fittedRows) return;
+
+    const growOnly = fittedRows >= 0;
+    fittedRows = rows.size;
+
+    requestAnimationFrame(() => {
+      const height = Math.ceil(document.body.getBoundingClientRect().height);
+      window.deejFitHeight(height, window.devicePixelRatio || 1, growOnly).catch(() => {});
+    });
   }
 
   async function stateLoop() {

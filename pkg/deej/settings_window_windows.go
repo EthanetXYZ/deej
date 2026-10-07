@@ -25,6 +25,11 @@ var (
 	procGetDpiForSystem  = user32.NewProc("GetDpiForSystem")
 	procLoadImageW       = user32.NewProc("LoadImageW")
 	procSendMessageW     = user32.NewProc("SendMessageW")
+	procGetWindowRect    = user32.NewProc("GetWindowRect")
+	procGetClientRect    = user32.NewProc("GetClientRect")
+	procSetWindowPos     = user32.NewProc("SetWindowPos")
+	procMonitorFromWnd   = user32.NewProc("MonitorFromWindow")
+	procGetMonitorInfoW  = user32.NewProc("GetMonitorInfoW")
 	settingsWindowLock   sync.Mutex
 	settingsWindowHandle uintptr
 )
@@ -129,6 +134,13 @@ func (d *Deej) runSettingsWindow() {
 		"deejSetOption": func(name string, value string) error {
 			return d.setOption(name, value)
 		},
+		"deejFitHeight": func(contentHeight float64, pixelRatio float64, growOnly bool) {
+			if pixelRatio <= 0 {
+				pixelRatio = 1
+			}
+
+			fitWindowHeight(hwnd, int(contentHeight*pixelRatio+0.5), growOnly)
+		},
 		"deejAction": func(name string) error {
 			return d.runAction(name)
 		},
@@ -165,4 +177,69 @@ func setWindowIcon(hwnd uintptr) {
 			procSendMessageW.Call(hwnd, wmSetIcon, size, hIcon)
 		}
 	}
+}
+
+type winRect struct {
+	Left, Top, Right, Bottom int32
+}
+
+type monitorInfo struct {
+	Size    uint32
+	Monitor winRect
+	Work    winRect
+	Flags   uint32
+}
+
+const (
+	monitorDefaultToNearest = 2
+	swpNoZOrder             = 0x0004
+	swpNoActivate           = 0x0010
+)
+
+// fitWindowHeight resizes the window so its content area is the given height in physical pixels,
+// without going past the usable area of its monitor. with growOnly, it never makes the window smaller
+func fitWindowHeight(hwnd uintptr, contentHeight int, growOnly bool) {
+	var window, client winRect
+	procGetWindowRect.Call(hwnd, uintptr(unsafe.Pointer(&window)))
+	procGetClientRect.Call(hwnd, uintptr(unsafe.Pointer(&client)))
+
+	clientHeight := int(client.Bottom - client.Top)
+	if contentHeight <= 0 || abs(contentHeight-clientHeight) <= 2 || (growOnly && contentHeight < clientHeight) {
+		return
+	}
+
+	frame := int(window.Bottom-window.Top) - clientHeight
+	width := int(window.Right - window.Left)
+	height := contentHeight + frame
+	top := int(window.Top)
+
+	// stay within the monitor's work area (the screen minus the taskbar)
+	info := monitorInfo{Size: uint32(unsafe.Sizeof(monitorInfo{}))}
+	if monitor, _, _ := procMonitorFromWnd.Call(hwnd, monitorDefaultToNearest); monitor != 0 {
+		if ok, _, _ := procGetMonitorInfoW.Call(monitor, uintptr(unsafe.Pointer(&info))); ok != 0 {
+			workHeight := int(info.Work.Bottom - info.Work.Top)
+			if height > workHeight {
+				height = workHeight
+			}
+
+			// keep it vertically centered where it was, then nudge it back inside the work area
+			top = int(window.Top) + (int(window.Bottom-window.Top)-height)/2
+			if top+height > int(info.Work.Bottom) {
+				top = int(info.Work.Bottom) - height
+			}
+			if top < int(info.Work.Top) {
+				top = int(info.Work.Top)
+			}
+		}
+	}
+
+	procSetWindowPos.Call(hwnd, 0, uintptr(window.Left), uintptr(top), uintptr(width), uintptr(height), swpNoZOrder|swpNoActivate)
+}
+
+func abs(v int) int {
+	if v < 0 {
+		return -v
+	}
+
+	return v
 }
