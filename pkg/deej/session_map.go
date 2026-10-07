@@ -19,6 +19,11 @@ type sessionMap struct {
 	m    map[string][]Session
 	lock sync.Locker
 
+	// serializes using sessions (setting volumes) with refreshing them. without it, a refresh triggered from
+	// another goroutine (e.g. a config reload) could release sessions while their volume is being set,
+	// which crashes on the freed COM objects
+	opLock sync.Mutex
+
 	sessionFinder SessionFinder
 
 	lastSessionRefresh time.Time
@@ -87,6 +92,9 @@ func (m *sessionMap) initialize() error {
 }
 
 func (m *sessionMap) release() error {
+	m.opLock.Lock()
+	defer m.opLock.Unlock()
+
 	if err := m.sessionFinder.Release(); err != nil {
 		m.logger.Warnw("Failed to release session finder during session map release", "error", err)
 		return fmt.Errorf("release session finder during release: %w", err)
@@ -152,6 +160,14 @@ func (m *sessionMap) setupOnSliderMove() {
 
 // performance: explain why force == true at every such use to avoid unintended forced refresh spams
 func (m *sessionMap) refreshSessions(force bool) {
+	m.opLock.Lock()
+	defer m.opLock.Unlock()
+
+	m.refreshSessionsLocked(force)
+}
+
+// refreshSessionsLocked is refreshSessions for callers already holding opLock
+func (m *sessionMap) refreshSessionsLocked(force bool) {
 
 	// make sure enough time passed since the last refresh, unless force is true in which case always clear
 	if !force && m.lastSessionRefresh.Add(minTimeBetweenSessionRefreshes).After(time.Now()) {
@@ -208,11 +224,13 @@ func (m *sessionMap) sessionMapped(session Session) bool {
 }
 
 func (m *sessionMap) handleSliderMoveEvent(event SliderMoveEvent) {
+	m.opLock.Lock()
+	defer m.opLock.Unlock()
 
 	// first of all, ensure our session map isn't moldy
 	if m.lastSessionRefresh.Add(maxTimeBetweenSessionRefreshes).Before(time.Now()) {
 		m.logger.Debug("Stale session map detected on slider move, refreshing")
-		m.refreshSessions(true)
+		m.refreshSessionsLocked(true)
 	}
 
 	// get the targets mapped to this slider from the config
@@ -265,13 +283,13 @@ func (m *sessionMap) handleSliderMoveEvent(event SliderMoveEvent) {
 	// processes could've opened since the last time this slider moved.
 	// if they haven't, the cooldown will take care to not spam it up
 	if !targetFound {
-		m.refreshSessions(false)
+		m.refreshSessionsLocked(false)
 	} else if adjustmentFailed {
 
 		// performance: the reason that forcing a refresh here is okay is that we'll only get here
 		// when a session's SetVolume call errored, such as in the case of a stale master session
 		// (or another, more catastrophic failure happens)
-		m.refreshSessions(true)
+		m.refreshSessionsLocked(true)
 	}
 }
 

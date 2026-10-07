@@ -2,6 +2,7 @@ package deej
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -15,8 +16,10 @@ const (
 	buildTypeDev     = "dev"
 	buildTypeRelease = "release"
 
-	logDirectory = "logs"
-	logFilename  = "deej-latest-run.log"
+	logDirectory        = "logs"
+	logFilename         = "deej-latest-run.log"
+	previousLogFilename = "deej-previous-run.log"
+	crashLogFilename    = "deej-crash.log"
 )
 
 // NewLogger provides a logger instance for the whole program
@@ -31,7 +34,15 @@ func NewLogger(buildType string) (*zap.SugaredLogger, error) {
 
 		loggerConfig = zap.NewProductionConfig()
 
-		loggerConfig.OutputPaths = []string{filepath.Join(logDirectory, logFilename)}
+		// start a fresh log each run, keeping the previous one around (handy right after a crash)
+		logPath := filepath.Join(logDirectory, logFilename)
+		os.Remove(filepath.Join(logDirectory, previousLogFilename))
+		os.Rename(logPath, filepath.Join(logDirectory, previousLogFilename))
+
+		// go writes fatal runtime errors (crashes) to stderr, which goes nowhere without a console
+		captureCrashOutput(filepath.Join(logDirectory, crashLogFilename))
+
+		loggerConfig.OutputPaths = []string{logPath}
 		loggerConfig.Encoding = "console"
 
 		// development: debug and above, log to stderr only, colorful
