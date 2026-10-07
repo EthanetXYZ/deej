@@ -3,6 +3,7 @@ package deej
 import (
 	"errors"
 	"fmt"
+	"runtime"
 	"strings"
 	"syscall"
 	"time"
@@ -57,6 +58,13 @@ func newSessionFinder(logger *zap.SugaredLogger) (SessionFinder, error) {
 func (sf *wcaSessionFinder) GetAllSessions() ([]Session, error) {
 	sessions := []Session{}
 
+	// COM initialization is per OS thread, so keep this goroutine on one thread until we've uninitialized again
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+
+	// whether we need to balance our CoInitializeEx call when we're done
+	comInitialized := true
+
 	// we must call this every time we're about to list devices, i think. could be wrong
 	if err := ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED); err != nil {
 
@@ -64,11 +72,18 @@ func (sf *wcaSessionFinder) GetAllSessions() ([]Session, error) {
 		// which represents E_FALSE in COM error handling. this is fine for this function,
 		// and just means that the call was redundant.
 		const eFalse = 1
+
+		// RPC_E_CHANGED_MODE means something else already initialized COM on this thread in multithreaded mode.
+		// COM is usable as-is, but this call didn't count, so we mustn't uninitialize it afterwards
+		const rpcEChangedMode = 0x80010106
 		oleError := &ole.OleError{}
 
 		if errors.As(err, &oleError) {
 			if oleError.Code() == eFalse {
 				sf.logger.Warn("CoInitializeEx failed with E_FALSE due to redundant invocation")
+			} else if oleError.Code() == rpcEChangedMode {
+				sf.logger.Debug("COM already initialized on this thread in multithreaded mode, using it as-is")
+				comInitialized = false
 			} else {
 				sf.logger.Warnw("Failed to call CoInitializeEx",
 					"isOleError", true,
@@ -87,7 +102,10 @@ func (sf *wcaSessionFinder) GetAllSessions() ([]Session, error) {
 		}
 
 	}
-	defer ole.CoUninitialize()
+
+	if comInitialized {
+		defer ole.CoUninitialize()
+	}
 
 	// ensure we have a device enumerator
 	if err := sf.getDeviceEnumerator(); err != nil {
@@ -101,6 +119,15 @@ func (sf *wcaSessionFinder) GetAllSessions() ([]Session, error) {
 	defaultOutputEndpoint, defaultInputEndpoint, err := sf.getDefaultAudioEndpoints()
 	if err != nil {
 		sf.logger.Warnw("Failed to get default audio endpoints", "error", err)
+
+		// until the device change callback is registered, nothing else keeps the enumerator alive - it dies with
+		// the COM apartment once we uninitialize below. forget it (without releasing, it's already gone) so the next
+		// attempt creates a fresh one instead of crashing on a dangling pointer. this happens when deej starts
+		// without any audio output device, e.g. over remote desktop
+		if sf.mmNotificationClient == nil {
+			sf.mmDeviceEnumerator = nil
+		}
+
 		return nil, fmt.Errorf("get default audio endpoints: %w", err)
 	}
 	defer defaultOutputEndpoint.Release()

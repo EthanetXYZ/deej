@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
@@ -27,11 +28,19 @@ type CanonicalConfig struct {
 
 	NoiseReductionLevel string
 
+	SliderSensitivity *sensitivityMap
+
 	logger             *zap.SugaredLogger
 	notifier           Notifier
 	stopWatcherChannel chan bool
 
 	reloadConsumers []chan bool
+
+	// serializes loads and in-app edits, since they can come from the file watcher and the tray at the same time
+	loadLock sync.Mutex
+
+	// set when deej itself writes the config file, so the file watcher doesn't reload it a second time
+	ignoreWatcherUntil time.Time
 
 	userConfig     *viper.Viper
 	internalConfig *viper.Viper
@@ -53,6 +62,7 @@ const (
 	configKeyCOMPort             = "com_port"
 	configKeyBaudRate            = "baud_rate"
 	configKeyNoiseReductionLevel = "noise_reduction"
+	configKeySliderSensitivity   = "slider_sensitivity"
 
 	defaultCOMPort  = "COM4"
 	defaultBaudRate = 9600
@@ -77,6 +87,7 @@ func NewConfig(logger *zap.SugaredLogger, notifier Notifier) (*CanonicalConfig, 
 		notifier:           notifier,
 		reloadConsumers:    []chan bool{},
 		stopWatcherChannel: make(chan bool),
+		SliderSensitivity:  newSensitivityMap(),
 	}
 
 	// distinguish between the user-provided config (config.yaml) and the internal config (logs/preferences.yaml)
@@ -105,6 +116,43 @@ func NewConfig(logger *zap.SugaredLogger, notifier Notifier) (*CanonicalConfig, 
 
 // Load reads deej's config files from disk and tries to parse them
 func (cc *CanonicalConfig) Load() error {
+	cc.loadLock.Lock()
+	defer cc.loadLock.Unlock()
+
+	return cc.loadLocked()
+}
+
+// Edit applies changes to the user's config file from within deej (e.g. from the tray menu),
+// then reloads the config and lets all consumers know about it
+func (cc *CanonicalConfig) Edit(edits ...configEdit) error {
+	cc.loadLock.Lock()
+
+	cc.logger.Infow("Editing config file", "edits", edits)
+
+	// the watcher would otherwise pick up our own write, reload again and show a notification
+	cc.ignoreWatcherUntil = time.Now().Add(time.Second)
+
+	if err := editConfigFile(userConfigFilepath, edits...); err != nil {
+		cc.loadLock.Unlock()
+		cc.logger.Warnw("Failed to edit config file", "error", err)
+		cc.notifier.Notify("Couldn't save setting!", "Please check deej's logs for more details.")
+
+		return fmt.Errorf("edit config file: %w", err)
+	}
+
+	err := cc.loadLocked()
+	cc.loadLock.Unlock()
+
+	if err != nil {
+		return fmt.Errorf("reload after edit: %w", err)
+	}
+
+	cc.onConfigReloaded()
+
+	return nil
+}
+
+func (cc *CanonicalConfig) loadLocked() error {
 	cc.logger.Debugw("Loading config", "path", userConfigFilepath)
 
 	// make sure it exists
@@ -146,7 +194,8 @@ func (cc *CanonicalConfig) Load() error {
 	cc.logger.Infow("Config values",
 		"sliderMapping", cc.SliderMapping,
 		"connectionInfo", cc.ConnectionInfo,
-		"invertSliders", cc.InvertSliders)
+		"invertSliders", cc.InvertSliders,
+		"sliderSensitivity", cc.SliderSensitivity)
 
 	return nil
 }
@@ -175,10 +224,19 @@ func (cc *CanonicalConfig) WatchConfigFileChanges() {
 	cc.userConfig.WatchConfig()
 	cc.userConfig.OnConfigChange(func(event fsnotify.Event) {
 
-		// when we get a write event...
-		if event.Op&fsnotify.Write == fsnotify.Write {
+		// when we get a write event (or a create, which is how editors that save atomically show up)...
+		if event.Op&(fsnotify.Write|fsnotify.Create) != 0 {
 
 			now := time.Now()
+
+			// ignore changes that deej made itself - those were already loaded
+			cc.loadLock.Lock()
+			selfWrite := now.Before(cc.ignoreWatcherUntil)
+			cc.loadLock.Unlock()
+
+			if selfWrite {
+				return
+			}
 
 			// ... check if it's not a duplicate (many editors will write to a file twice)
 			if lastAttemptedReload.Add(minTimeBetweenReloadAttempts).Before(now) {
@@ -238,6 +296,14 @@ func (cc *CanonicalConfig) populateFromVipers() error {
 
 	cc.InvertSliders = cc.userConfig.GetBool(configKeyInvertSliders)
 	cc.NoiseReductionLevel = cc.userConfig.GetString(configKeyNoiseReductionLevel)
+
+	sensitivity, errs := sensitivityMapFromConfig(cc.userConfig.GetStringMap(configKeySliderSensitivity))
+	if len(errs) > 0 {
+		cc.logger.Warnw("Some slider sensitivity settings are invalid and were ignored", "errors", errs)
+		cc.notifier.Notify("Invalid slider sensitivity setting!", errs[0].Error())
+	}
+
+	cc.SliderSensitivity = sensitivity
 
 	cc.logger.Debug("Populated config fields from vipers")
 

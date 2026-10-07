@@ -25,3 +25,15 @@ baud_rate: 9600
 # adjust the amount of signal noise reduction depending on your hardware quality
 # supported values are "low" (excellent hardware), "default" (regular hardware) or "high" (bad, noisy hardware)
 noise_reduction: default
+
+# slider sensitivity - controls how a slider's position is turned into a volume level.
+# you can also change all of this from deej's tray icon (right-click -> Slider sensitivity).
+# - curve: 1 is linear (10% slider = 10% volume). higher values give you finer control at low volumes,
+#   which helps a lot if your sliders feel too loud near the bottom. 2 is a good starting point.
+#   you can use a number between 0.2 and 6, or a preset name: linear, gentle, balanced, fine, very_fine
+# - max_volume: the volume (1-100) a slider reaches at the very top, handy to keep an app from getting too loud
+# "default" applies to all sliders, and you can override it per slider using its index
+slider_sensitivity:
+  default:
+    curve: 1
+    max_volume: 100

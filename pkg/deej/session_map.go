@@ -74,9 +74,10 @@ func newSessionMap(deej *Deej, logger *zap.SugaredLogger, sessionFinder SessionF
 }
 
 func (m *sessionMap) initialize() error {
+	// don't give up if this fails - there may be no audio device yet (e.g. deej started before the
+	// audio driver, or the PC is being used over remote desktop). sessions get re-acquired as sliders move
 	if err := m.getAndAddSessions(); err != nil {
-		m.logger.Warnw("Failed to get all sessions during session map initialization", "error", err)
-		return fmt.Errorf("get all sessions during init: %w", err)
+		m.logger.Warnw("Failed to get all sessions during session map initialization, will retry later", "error", err)
 	}
 
 	m.setupOnConfigReload()
@@ -222,6 +223,9 @@ func (m *sessionMap) handleSliderMoveEvent(event SliderMoveEvent) {
 		return
 	}
 
+	// translate the physical slider position into a volume level using its sensitivity settings
+	volume := m.deej.config.SliderSensitivity.get(event.SliderID).apply(event.PercentValue)
+
 	targetFound := false
 	adjustmentFailed := false
 
@@ -247,8 +251,8 @@ func (m *sessionMap) handleSliderMoveEvent(event SliderMoveEvent) {
 
 			// iterate all matching sessions and adjust the volume of each one
 			for _, session := range sessions {
-				if session.GetVolume() != event.PercentValue {
-					if err := session.SetVolume(event.PercentValue); err != nil {
+				if session.GetVolume() != volume {
+					if err := session.SetVolume(volume); err != nil {
 						m.logger.Warnw("Failed to set target session volume", "error", err)
 						adjustmentFailed = true
 					}

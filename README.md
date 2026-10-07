@@ -1,5 +1,15 @@
 # deej
 
+> **This is a fork of [omriharel/deej](https://github.com/omriharel/deej)** with a few quality-of-life additions:
+>
+> - **Slider sensitivity:** response curves make the bottom of each slider usable. With the original linear mapping, 10% on a slider is still loud; with the "Balanced" curve it's 1%. You can also cap each slider's maximum volume, either for all sliders or per slider.
+> - **Settings window:** left-click the tray icon (or run `deej.exe --settings`) to adjust sensitivity, COM port, noise reduction, inverted sliders and "Start with Windows". It shows each knob's live position and volume, and applies changes instantly.
+> - **Auto-reconnect:** deej keeps running and reconnects when the board is unplugged, busy, or plugged in after deej starts, instead of quitting.
+> - **Sturdier startup:** deej no longer crashes when there's no audio device yet (e.g. over Remote Desktop), and finds `config.yaml` next to the exe even when launched from elsewhere.
+> - **Up to date:** builds with current Go and dependencies. Settings changed in the app are saved to `config.yaml` with your comments kept intact.
+>
+> The settings window uses the Microsoft Edge WebView2 Runtime, which comes with Windows 11. The new `slider_sensitivity` config section is documented in [config.yaml](./config.yaml).
+
 deej is an **open-source hardware volume mixer** for Windows and Linux PCs. It lets you use real-life sliders (like a DJ!) to **seamlessly control the volumes of different apps** (such as your music player, the game you're playing and your voice chat session) without having to stop what you're doing.
 
 **Join the [deej Discord server](https://discord.gg/nf88NJu) if you need help or have any questions!**

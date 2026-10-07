@@ -3,9 +3,9 @@
 package deej
 
 import (
-	"errors"
 	"fmt"
 	"os"
+	"sync"
 
 	"go.uber.org/zap"
 
@@ -29,6 +29,11 @@ type Deej struct {
 	stopChannel chan bool
 	version     string
 	verbose     bool
+
+	openSettingsOnStart bool
+
+	settingsOnce sync.Once
+	settings     *settingsBackend
 }
 
 // NewDeej creates a Deej instance
@@ -141,33 +146,13 @@ func (d *Deej) run() {
 	// watch the config file for changes
 	go d.config.WatchConfigFileChanges()
 
-	// connect to the arduino for the first time
-	go func() {
-		if err := d.serial.Start(); err != nil {
-			d.logger.Warnw("Failed to start first-time serial connection", "error", err)
+	// connect to the arduino - this keeps retrying in the background, so a missing or busy
+	// board no longer makes deej quit. the tray shows the connection status instead
+	d.serial.Start()
 
-			// If the port is busy, that's because something else is connected - notify and quit
-			if errors.Is(err, os.ErrPermission) {
-				d.logger.Warnw("Serial port seems busy, notifying user and closing",
-					"comPort", d.config.ConnectionInfo.COMPort)
-
-				d.notifier.Notify(fmt.Sprintf("Can't connect to %s!", d.config.ConnectionInfo.COMPort),
-					"This serial port is busy, make sure to close any serial monitor or other deej instance.")
-
-				d.signalStop()
-
-				// also notify if the COM port they gave isn't found, maybe their config is wrong
-			} else if errors.Is(err, os.ErrNotExist) {
-				d.logger.Warnw("Provided COM port seems wrong, notifying user and closing",
-					"comPort", d.config.ConnectionInfo.COMPort)
-
-				d.notifier.Notify(fmt.Sprintf("Can't connect to %s!", d.config.ConnectionInfo.COMPort),
-					"This serial port doesn't exist, check your configuration and make sure it's set correctly.")
-
-				d.signalStop()
-			}
-		}
-	}()
+	if d.openSettingsOnStart {
+		d.openSettingsWindow()
+	}
 
 	// wait until stopped (gracefully)
 	<-d.stopChannel
@@ -190,6 +175,9 @@ func (d *Deej) signalStop() {
 func (d *Deej) stop() error {
 	d.logger.Info("Stopping")
 
+	// save anything the settings window changed but hasn't written yet
+	d.flushConfigEdits()
+
 	d.config.StopWatchingConfigFile()
 	d.serial.Stop()
 
@@ -205,4 +193,9 @@ func (d *Deej) stop() error {
 	d.logger.Sync()
 
 	return nil
+}
+
+// OpenSettingsOnStart makes deej open its settings window as soon as it starts, if called before Initialize
+func (d *Deej) OpenSettingsOnStart() {
+	d.openSettingsOnStart = true
 }

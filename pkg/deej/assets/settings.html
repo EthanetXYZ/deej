@@ -1,0 +1,947 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>deej settings</title>
+<style>
+  :root {
+    --bg: #f3f4f6;
+    --surface: #ffffff;
+    --surface-2: #f6f7f9;
+    --border: #e3e5ea;
+    --divider: #eef0f3;
+    --text: #15171c;
+    --muted: #646a76;
+    --faint: #9aa0ab;
+    --accent: #0f8b7d;
+    --accent-soft: #e3f4f1;
+    --accent-text: #ffffff;
+    --track: #e2e5ea;
+    --grid: #e9ebef;
+    --ok: #15905a;
+    --ok-soft: #e2f4ea;
+    --warn: #b7791f;
+    --warn-soft: #fbf1df;
+    --danger: #c0392b;
+    --row-hover: #fafbfc;
+    --shadow: 0 1px 2px rgba(16, 24, 40, .05), 0 1px 3px rgba(16, 24, 40, .06);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111316;
+      --surface: #1a1d21;
+      --surface-2: #22252a;
+      --border: #2b2f36;
+      --divider: #24272d;
+      --text: #eceef1;
+      --muted: #a1a7b2;
+      --faint: #6d7480;
+      --accent: #34c3b0;
+      --accent-soft: #163b37;
+      --accent-text: #08201d;
+      --track: #30343c;
+      --grid: #2a2e35;
+      --ok: #3fcf8e;
+      --ok-soft: #173327;
+      --warn: #e8b04f;
+      --warn-soft: #3a2f1a;
+      --danger: #ff7a6b;
+      --row-hover: #1e2125;
+      --shadow: none;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+    font-size: 13px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body { padding: 14px 16px 20px; }
+
+  button, select { font: inherit; color: inherit; }
+
+  /* ---------- header ---------- */
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .logo {
+    font-family: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 19px;
+    letter-spacing: -.02em;
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--surface-2);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  .pill::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .pill.ok { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
+  .pill.warn { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
+
+  .header-actions { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+  .version { color: var(--faint); font-size: 11.5px; margin-right: 4px; }
+
+  .btn {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 7px;
+    padding: 3px 10px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .btn:hover { border-color: var(--faint); }
+
+  /* ---------- panels ---------- */
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+  }
+
+  .panel + .panel { margin-top: 12px; }
+
+  .panel-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 9px 14px 7px;
+    border-bottom: 1px solid var(--divider);
+  }
+
+  .panel-head h2 {
+    font-size: 13.5px;
+    font-weight: 650;
+    margin: 0;
+  }
+
+  .panel-head p { margin: 0; color: var(--muted); font-size: 12px; }
+
+  /* ---------- slider rows ---------- */
+
+  .cols {
+    display: grid;
+    grid-template-columns: minmax(110px, 1.1fr) 38px 92px minmax(170px, 2fr) minmax(120px, 1.4fr) 62px;
+    align-items: center;
+    column-gap: 14px;
+    padding: 0 14px;
+  }
+
+  .colhead {
+    color: var(--faint);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    padding-top: 6px;
+    padding-bottom: 2px;
+  }
+
+  .colhead .center, .slider-row .center { justify-self: center; }
+
+  .slider-row {
+    padding-top: 7px;
+    padding-bottom: 7px;
+    border-top: 1px solid var(--divider);
+  }
+
+  .slider-row:hover { background: var(--row-hover); }
+  .slider-row:last-child { border-radius: 0 0 10px 10px; }
+  .colhead + .slider-row { border-top: none; }
+
+  .slider-row.default-row { background: color-mix(in srgb, var(--accent-soft) 45%, transparent); }
+
+  .name { min-width: 0; }
+  .name .title { font-weight: 650; white-space: nowrap; }
+
+  .name .targets {
+    color: var(--muted);
+    font-size: 11.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  svg.graph {
+    width: 38px;
+    height: 38px;
+    display: block;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: visible;
+  }
+
+  .graph .linear { stroke: var(--faint); stroke-width: 1.2; stroke-dasharray: 4 4; fill: none; }
+  .graph .curve { stroke: var(--accent); stroke-width: 6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .graph .dot { fill: var(--surface); stroke: var(--accent); stroke-width: 5; }
+
+  .now { font-variant-numeric: tabular-nums; font-size: 12px; white-space: nowrap; }
+  .now .vol { font-weight: 650; }
+  .now .arrow { color: var(--faint); margin: 0 3px; }
+  .now .none { color: var(--faint); }
+
+  .bars { display: grid; gap: 2px; margin-top: 3px; }
+  .bar { height: 3px; border-radius: 2px; background: var(--track); overflow: hidden; }
+  .bar > div { height: 100%; width: 0; background: var(--faint); }
+  .bar.volume > div { background: var(--accent); }
+
+  .control { display: flex; align-items: center; gap: 8px; min-width: 0; }
+
+  .control output {
+    width: 36px;
+    flex: none;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: 650;
+    font-size: 12px;
+  }
+
+  select {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2px 4px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .control select { width: 88px; flex: none; }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    min-width: 40px;
+    height: 18px;
+    background: transparent;
+    cursor: pointer;
+    margin: 0;
+  }
+
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(to right, var(--accent) var(--fill, 0%), var(--track) var(--fill, 0%));
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    margin-top: -5px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 2px solid var(--accent);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .25);
+  }
+
+  input[type=range]:focus-visible { outline: none; }
+  input[type=range]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px var(--accent-soft); }
+
+  .slider-row.inherits .control { opacity: .5; }
+  .slider-row.inherits:hover .control { opacity: .8; }
+
+  .switch {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .switch input { display: none; }
+
+  .switch .track {
+    width: 30px;
+    height: 17px;
+    border-radius: 999px;
+    background: var(--track);
+    position: relative;
+    transition: background .15s;
+    flex: none;
+  }
+
+  .switch .track::after {
+    content: "";
+    position: absolute;
+    top: 2.5px;
+    left: 2.5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .3);
+    transition: transform .15s;
+  }
+
+  .switch input:checked + .track { background: var(--accent); }
+  .switch input:checked + .track::after { transform: translateX(13px); }
+
+  .dash { color: var(--faint); }
+
+  .empty { color: var(--muted); padding: 14px; text-align: center; border-top: 1px solid var(--divider); }
+
+  /* narrow windows: name/graph/now on one line, controls on the next */
+  @media (max-width: 720px) {
+    .cols {
+      grid-template-columns: minmax(0, 1fr) 38px 92px 52px;
+      row-gap: 6px;
+    }
+
+    .cols > .curve-col { grid-column: 1 / 3; }
+    .cols > .max-col { grid-column: 3 / 5; }
+    .colhead { display: none; }
+    .default-col { grid-row: 1; grid-column: 4; }
+  }
+
+  /* ---------- options ---------- */
+
+  .options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 14px;
+    border-top: 1px solid var(--divider);
+  }
+
+  .option:nth-child(-n+2) { border-top: none; }
+  .option:nth-child(odd) { border-right: 1px solid var(--divider); }
+  .option .label { font-weight: 600; }
+  .option .hint { color: var(--muted); font-size: 11.5px; }
+  .option select { min-width: 110px; padding: 3px 6px; }
+
+  @media (max-width: 620px) {
+    .options { grid-template-columns: 1fr; }
+    .option:nth-child(2) { border-top: 1px solid var(--divider); }
+    .option:nth-child(odd) { border-right: none; }
+  }
+
+  .seg { display: inline-flex; gap: 3px; }
+
+  .seg button {
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .seg button:hover { border-color: var(--faint); }
+
+  .seg button.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-text);
+    font-weight: 600;
+  }
+
+  #toast {
+    position: fixed;
+    left: 50%;
+    bottom: 14px;
+    transform: translate(-50%, 16px);
+    opacity: 0;
+    background: var(--text);
+    color: var(--bg);
+    padding: 6px 12px;
+    border-radius: 7px;
+    font-size: 12.5px;
+    pointer-events: none;
+    transition: opacity .2s, transform .2s;
+    max-width: calc(100% - 32px);
+  }
+
+  #toast.show { opacity: 1; transform: translate(-50%, 0); }
+  #toast.error { background: var(--danger); color: #fff; }
+</style>
+</head>
+<body>
+  <header>
+    <div class="logo">deej</div>
+    <span id="status" class="pill">Connecting…</span>
+    <div class="header-actions">
+      <span id="version" class="version"></span>
+      <button class="btn" data-action="rescan" title="Look for newly opened audio apps">Re-scan apps</button>
+      <button class="btn" data-action="editConfig" title="Slider mappings live in config.yaml">Edit config</button>
+    </div>
+  </header>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h2>Slider sensitivity</h2>
+      <p>Higher curve = finer control near the bottom of a slider</p>
+    </div>
+    <div class="cols colhead">
+      <div>Slider</div>
+      <div></div>
+      <div>Now</div>
+      <div>Curve</div>
+      <div>Max volume</div>
+      <div class="center">Default</div>
+    </div>
+    <div id="rows"></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h2>Device &amp; options</h2>
+    </div>
+    <div class="options">
+      <div class="option">
+        <div>
+          <div class="label">COM port</div>
+          <div class="hint">Where your board is plugged in</div>
+        </div>
+        <select id="port"></select>
+      </div>
+      <div class="option">
+        <div>
+          <div class="label">Noise reduction</div>
+          <div class="hint">Raise if volumes jitter</div>
+        </div>
+        <div class="seg" id="noise">
+          <button data-value="low">Low</button>
+          <button data-value="default">Default</button>
+          <button data-value="high">High</button>
+        </div>
+      </div>
+      <div class="option">
+        <div>
+          <div class="label">Invert sliders</div>
+          <div class="hint">Top is 0%, bottom is 100%</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="invert"><span class="track"></span></label>
+      </div>
+      <div class="option" id="autostart-row">
+        <div>
+          <div class="label">Start with Windows</div>
+          <div class="hint">Launch deej when you log in</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="autostart"><span class="track"></span></label>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+<script>
+(() => {
+  const STATE_POLL_MS = 1000;   // full state (names, settings, options)
+  const POSITION_POLL_MS = 33;  // just the knob positions, ~30 times a second
+  const SMOOTHING = 0.35;       // how quickly the displayed knob catches up each frame (0-1)
+  const HOLD_MS = 1500;         // how long local edits win over polled values
+  const CUSTOM = "custom";
+
+  const $ = (sel, el = document) => el.querySelector(sel);
+  const rowsEl = $("#rows");
+  const rows = new Map();
+  let state = null;
+
+  // ---------- helpers ----------
+
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  const fmtCurve = c => (Math.round(c * 100) / 100).toString();
+
+  function fmtVolume(v) {
+    const p = v * 100;
+    if (p > 0 && p < 10) return p.toFixed(1) + "%";
+    return Math.round(p) + "%";
+  }
+
+  const volumeAt = (curve, max, x) => (max / 100) * Math.pow(x, curve);
+
+  function curvePath(curve, max) {
+    let d = "";
+    for (let i = 0; i <= 40; i++) {
+      const x = i / 40;
+      const y = volumeAt(curve, max, x);
+      d += (i ? "L" : "M") + (x * 100).toFixed(1) + " " + (100 - y * 100).toFixed(1);
+    }
+    return d;
+  }
+
+  function setFill(input) {
+    const pct = (input.value - input.min) / (input.max - input.min) * 100;
+    input.style.setProperty("--fill", pct + "%");
+  }
+
+  // only touch the DOM when something actually changed
+  function setText(el, text) {
+    if (el.textContent !== text) el.textContent = text;
+  }
+
+  let toastTimer;
+  function toast(msg, isError) {
+    const el = $("#toast");
+    el.textContent = msg;
+    el.className = "show" + (isError ? " error" : "");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.className = "", isError ? 4000 : 1400);
+  }
+
+  async function call(name, ...args) {
+    try {
+      return await window[name](...args);
+    } catch (err) {
+      toast(String(err), true);
+      throw err;
+    }
+  }
+
+  // ---------- slider rows ----------
+
+  function makeRow(key) {
+    const isDefault = key === "default";
+    const row = {
+      key, isDefault,
+      curve: 1, max: 100,
+      following: false,
+      holdUntil: 0,
+      dirty: new Set(),
+      sendQueued: false,
+      sending: false,
+      target: -1,   // latest knob position from deej
+      shown: -1,    // smoothed position being displayed
+      drawn: null,  // what was last drawn, to skip redundant DOM updates
+    };
+
+    const root = document.createElement("div");
+    root.className = "cols slider-row" + (isDefault ? " default-row" : "");
+    root.innerHTML = `
+      <div class="name"><div class="title"></div><div class="targets"></div></div>
+      <svg class="graph" viewBox="-6 -6 112 112" aria-hidden="true">
+        <path class="linear" d="M0 100 L100 0"/>
+        <path class="curve"/>
+        <circle class="dot" r="10" cx="0" cy="100" style="display:none"/>
+      </svg>
+      <div class="now"></div>
+      <div class="control curve-col">
+        <select class="preset" title="Curve preset"></select>
+        <input type="range" class="curve-in" min="0.5" max="4" step="0.05" title="Curve">
+        <output class="curve-out"></output>
+      </div>
+      <div class="control max-col">
+        <input type="range" class="max-in" min="5" max="100" step="1" title="Maximum volume">
+        <output class="max-out"></output>
+      </div>
+      <div class="center default-col">
+        ${isDefault ? `<span class="dash">—</span>`
+          : `<label class="switch" title="Follow the 'All sliders' settings"><input type="checkbox" class="follow"><span class="track"></span></label>`}
+      </div>`;
+
+    row.root = root;
+    row.title = $(".title", root);
+    row.targets = $(".targets", root);
+    row.now = $(".now", root);
+    row.curvePath = $(".curve", root);
+    row.dot = $(".dot", root);
+    row.preset = $(".preset", root);
+    row.curveIn = $(".curve-in", root);
+    row.curveOut = $(".curve-out", root);
+    row.maxIn = $(".max-in", root);
+    row.maxOut = $(".max-out", root);
+    row.follow = $(".follow", root);
+
+    if (isDefault) {
+      row.title.textContent = "All sliders";
+      row.targets.textContent = "the default";
+      row.now.innerHTML = `<span class="none">—</span>`;
+    } else {
+      row.now.innerHTML = `
+        <div><span class="pos">–</span><span class="arrow">→</span><span class="vol">–</span></div>
+        <div class="bars"><div class="bar"><div class="pos-bar"></div></div><div class="bar volume"><div class="vol-bar"></div></div></div>`;
+      row.posOut = $(".pos", root);
+      row.volOut = $(".vol", root);
+      row.posBar = $(".pos-bar", root);
+      row.volBar = $(".vol-bar", root);
+    }
+
+    row.preset.addEventListener("change", () => {
+      if (row.preset.value === CUSTOM) return;
+      row.curve = parseFloat(row.preset.value);
+      localEdit(row, "curve");
+    });
+
+    row.curveIn.addEventListener("input", () => {
+      row.curve = parseFloat(row.curveIn.value);
+      localEdit(row, "curve");
+    });
+
+    row.maxIn.addEventListener("input", () => {
+      row.max = parseFloat(row.maxIn.value);
+      localEdit(row, "maxVolume");
+    });
+
+    if (row.follow) {
+      row.follow.addEventListener("change", async () => {
+        row.holdUntil = Date.now() + HOLD_MS;
+        row.following = row.follow.checked;
+        root.classList.toggle("inherits", row.following);
+
+        if (row.following) {
+          // show the default's values right away
+          row.curve = state.defaults.curve;
+          row.max = state.defaults.maxVolume;
+          drawControls(row);
+          await call("deejSetSensitivity", String(key), "all", 0, true);
+        } else {
+          await call("deejOverrideSensitivity", key, row.curve, row.max);
+        }
+      });
+    }
+
+    return row;
+  }
+
+  function ensurePresets(row) {
+    if (row.preset.options.length || !state) return;
+    const options = state.presets.map(p =>
+      `<option value="${p.value}" title="${esc(p.description)}">${esc(p.name.replace(/ \(.*\)$/, ""))}</option>`);
+    options.push(`<option value="${CUSTOM}" disabled>Custom</option>`);
+    row.preset.innerHTML = options.join("");
+  }
+
+  // a control changed locally: redraw right away, and send it to deej at most once per frame.
+  // deej applies it to the volume instantly and saves the config file once you pause
+  function localEdit(row, field) {
+    row.holdUntil = Date.now() + HOLD_MS;
+    row.dirty.add(field);
+    drawControls(row);
+    row.drawn = null;
+
+    // a slider following the default gets its own settings as soon as you touch it
+    if (!row.isDefault && row.following) {
+      row.following = false;
+      row.root.classList.remove("inherits");
+      if (row.follow) row.follow.checked = false;
+      row.dirty.add("override");
+    }
+
+    if (!row.sendQueued) {
+      row.sendQueued = true;
+      requestAnimationFrame(() => send(row));
+    }
+  }
+
+  async function send(row) {
+    row.sendQueued = false;
+
+    // one request at a time per row; anything that changes meanwhile goes out right after
+    if (row.sending) {
+      row.sendQueued = true;
+      setTimeout(() => send(row), 16);
+      return;
+    }
+
+    const fields = [...row.dirty];
+    row.dirty.clear();
+    if (!fields.length) return;
+
+    row.sending = true;
+    try {
+      if (fields.includes("override")) {
+        await call("deejOverrideSensitivity", row.key, row.curve, row.max);
+      } else {
+        const slider = row.isDefault ? "default" : String(row.key);
+        for (const field of fields) {
+          await call("deejSetSensitivity", slider, field, field === "curve" ? row.curve : row.max, false);
+        }
+      }
+    } catch (_) {
+      /* toast already shown */
+    } finally {
+      row.sending = false;
+      row.holdUntil = Date.now() + HOLD_MS;
+    }
+  }
+
+  function drawControls(row) {
+    if (document.activeElement !== row.curveIn || row.curveIn.value != row.curve) row.curveIn.value = row.curve;
+    if (document.activeElement !== row.maxIn || row.maxIn.value != row.max) row.maxIn.value = row.max;
+    setFill(row.curveIn);
+    setFill(row.maxIn);
+    setText(row.curveOut, fmtCurve(row.curve));
+    setText(row.maxOut, Math.round(row.max) + "%");
+    row.curvePath.setAttribute("d", curvePath(row.curve, row.max));
+
+    if (document.activeElement !== row.preset && state) {
+      const match = state.presets.find(p => Math.abs(p.value - row.curve) < 0.001);
+      const value = match ? String(match.value) : CUSTOM;
+      if (row.preset.value !== value) row.preset.value = value;
+    }
+  }
+
+  // draws the live knob position; called every animation frame
+  function drawLive(row) {
+    if (row.isDefault) return;
+
+    if (row.target < 0) {
+      if (row.drawn !== "none") {
+        row.dot.style.display = "none";
+        setText(row.posOut, "–");
+        setText(row.volOut, "–");
+        row.posBar.style.width = "0";
+        row.volBar.style.width = "0";
+        row.drawn = "none";
+      }
+      row.shown = -1;
+      return;
+    }
+
+    // glide towards the latest reading instead of jumping
+    if (row.shown < 0 || Math.abs(row.target - row.shown) < 0.002) {
+      row.shown = row.target;
+    } else {
+      row.shown += (row.target - row.shown) * SMOOTHING;
+    }
+
+    const position = row.shown;
+    const volume = volumeAt(row.curve, row.max, position);
+    const key = position.toFixed(4) + "|" + volume.toFixed(5);
+    if (row.drawn === key) return;
+    row.drawn = key;
+
+    row.dot.style.display = "";
+    row.dot.setAttribute("cx", (position * 100).toFixed(2));
+    row.dot.setAttribute("cy", (100 - volume * 100).toFixed(2));
+    row.posBar.style.width = (position * 100).toFixed(2) + "%";
+    row.volBar.style.width = (volume * 100).toFixed(2) + "%";
+
+    // the numbers follow the real reading so they don't flicker through in-between values
+    const realVolume = volumeAt(row.curve, row.max, row.target);
+    setText(row.posOut, Math.round(row.target * 100) + "%");
+    setText(row.volOut, fmtVolume(realVolume));
+  }
+
+  function renderRows() {
+    const keys = ["default", ...state.sliders.map(s => s.index)];
+
+    for (const [key, row] of rows) {
+      if (!keys.includes(key)) {
+        row.root.remove();
+        rows.delete(key);
+      }
+    }
+
+    for (const key of keys) {
+      let row = rows.get(key);
+      if (!row) {
+        row = makeRow(key);
+        rows.set(key, row);
+      }
+      ensurePresets(row);
+
+      const slider = key === "default" ? null : state.sliders.find(s => s.index === key);
+
+      if (slider) {
+        setText(row.title, `Slider ${key}`);
+        const names = slider.targets.length ? slider.targets.map(t => t.replace(/\.exe$/i, "")).join(", ") : "not mapped";
+        if (row.targets.textContent !== names) {
+          row.targets.textContent = names;
+          row.targets.title = slider.targets.join(", ");
+        }
+        row.target = slider.position;
+      }
+
+      if (Date.now() >= row.holdUntil && !row.sending && !row.sendQueued) {
+        const values = slider ? slider.effective : state.defaults;
+        if (row.curve !== values.curve || row.max !== values.maxVolume) {
+          row.curve = values.curve;
+          row.max = values.maxVolume;
+          row.drawn = null;
+        }
+
+        if (slider) {
+          row.following = slider.useDefault;
+          row.follow.checked = slider.useDefault;
+          row.root.classList.toggle("inherits", slider.useDefault);
+        }
+
+        drawControls(row);
+      }
+    }
+
+    // keep rows in slider order, only moving them when needed (moving a row would interrupt a drag)
+    const ordered = keys.map(k => rows.get(k).root);
+    const current = [...rowsEl.children].filter(c => c.id !== "empty");
+    if (ordered.some((node, i) => current[i] !== node)) {
+      for (const node of ordered) rowsEl.appendChild(node);
+    }
+
+    let empty = $("#empty");
+    if (state.sliders.length === 0) {
+      if (!empty) {
+        empty = document.createElement("div");
+        empty.id = "empty";
+        empty.className = "empty";
+        empty.textContent = "No sliders yet. Connect your board, or map sliders in the config file.";
+        rowsEl.appendChild(empty);
+      }
+    } else if (empty) {
+      empty.remove();
+    }
+  }
+
+  // ---------- options ----------
+
+  const portEl = $("#port");
+  portEl.addEventListener("change", async () => {
+    await call("deejSetOption", "comPort", portEl.value);
+    toast(`Switching to ${portEl.value}`);
+    setTimeout(refreshState, 300);
+  });
+
+  $("#invert").addEventListener("change", async e => {
+    await call("deejSetOption", "invert", String(e.target.checked));
+    setTimeout(refreshState, 300);
+  });
+
+  $("#autostart").addEventListener("change", async e => {
+    await call("deejSetOption", "autostart", String(e.target.checked));
+    setTimeout(refreshState, 300);
+  });
+
+  for (const b of document.querySelectorAll("#noise button")) {
+    b.addEventListener("click", async () => {
+      for (const other of document.querySelectorAll("#noise button")) other.classList.toggle("active", other === b);
+      await call("deejSetOption", "noise", b.dataset.value);
+      setTimeout(refreshState, 300);
+    });
+  }
+
+  for (const b of document.querySelectorAll("[data-action]")) {
+    b.addEventListener("click", async () => {
+      await call("deejAction", b.dataset.action);
+      if (b.dataset.action === "rescan") toast("Re-scanning audio apps");
+    });
+  }
+
+  function renderOptions() {
+    const s = state.status;
+    const status = $("#status");
+    let cls = "pill", text = "Connecting…";
+    if (s.connected) {
+      cls = "pill ok";
+      text = `Connected · ${s.port}`;
+    } else if (s.error) {
+      cls = "pill warn";
+      text = `${s.port}: ${s.error} · retrying`;
+    }
+    if (status.className !== cls) status.className = cls;
+    setText(status, text);
+
+    setText($("#version"), (state.version || "").replace(/^Version /, ""));
+
+    if (document.activeElement !== portEl) {
+      const ports = [...state.ports];
+      if (state.comPort && !ports.includes(state.comPort)) ports.push(state.comPort);
+      const html = ports.map(p => {
+        const missing = !state.ports.includes(p) ? " (not found)" : "";
+        return `<option value="${esc(p)}">${esc(p)}${missing}</option>`;
+      }).join("");
+      if (portEl.dataset.html !== html) {
+        portEl.innerHTML = html;
+        portEl.dataset.html = html;
+      }
+      if (portEl.value !== state.comPort) portEl.value = state.comPort;
+    }
+
+    $("#invert").checked = state.invert;
+    for (const b of document.querySelectorAll("#noise button")) {
+      b.classList.toggle("active", b.dataset.value === state.noise);
+    }
+
+    $("#autostart-row").style.display = state.autostart.supported ? "" : "none";
+    $("#autostart").checked = state.autostart.enabled;
+  }
+
+  // ---------- loops ----------
+
+  const ready = () => typeof window.deejState === "function";
+
+  async function refreshState() {
+    if (!ready()) return;
+    try {
+      state = await window.deejState();
+      renderOptions();
+      renderRows();
+    } catch (_) { /* try again next tick */ }
+  }
+
+  async function stateLoop() {
+    await refreshState();
+    setTimeout(stateLoop, state ? STATE_POLL_MS : 100);
+  }
+
+  let positionsInFlight = false;
+  async function positionLoop() {
+    if (ready() && state && !positionsInFlight) {
+      positionsInFlight = true;
+      try {
+        const positions = await window.deejPositions();
+        for (const row of rows.values()) {
+          if (!row.isDefault) row.target = row.key < positions.length ? positions[row.key] : -1;
+        }
+      } catch (_) {
+        /* try again next tick */
+      } finally {
+        positionsInFlight = false;
+      }
+    }
+    setTimeout(positionLoop, POSITION_POLL_MS);
+  }
+
+  function frame() {
+    for (const row of rows.values()) drawLive(row);
+    requestAnimationFrame(frame);
+  }
+
+  stateLoop();
+  positionLoop();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
