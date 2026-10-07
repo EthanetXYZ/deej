@@ -17,8 +17,8 @@ import (
 const (
 	trayRefreshInterval = 500 * time.Millisecond
 
-	// windows limits tray tooltips to 127 characters
-	maxTooltipLength = 127
+	// the tray tooltip buffer holds 127 characters, but windows 11 only displays about the first 64
+	maxTooltipLength = 63
 )
 
 type trayMenu struct {
@@ -144,34 +144,30 @@ func (t *trayMenu) refresh() {
 	status := t.deej.serial.Status()
 
 	statusLine := "Connecting..."
-	tooltip := "deej"
+	header := "deej"
 
 	switch {
 	case status.Connected:
 		statusLine = fmt.Sprintf("Connected (%s)", status.Port)
-		tooltip += " - " + status.Port
 	case status.Error != "":
 		statusLine = fmt.Sprintf("%s: %s - retrying...", status.Port, status.Error)
-		tooltip += " - " + status.Port + " " + status.Error
+		header = fmt.Sprintf("deej: %s %s", status.Port, status.Error)
 	}
 
 	t.status.SetTitle(statusLine)
 
-	lines := []string{tooltip}
+	var entries []tooltipEntry
 	for idx, position := range t.deej.serial.SliderPositions() {
-		if position < 0 {
+		targets, mapped := t.deej.config.SliderMapping.get(idx)
+		if position < 0 || !mapped || len(targets) == 0 {
 			continue
 		}
 
 		volume := t.deej.config.SliderSensitivity.get(idx).apply(position)
-		targets, _ := t.deej.config.SliderMapping.get(idx)
-		lines = append(lines, fmt.Sprintf("%s: %s", describeTargets(targets, 14), formatVolume(volume)))
+		entries = append(entries, tooltipEntry{targets: targets, volume: formatVolume(volume)})
 	}
 
-	tooltip = strings.Join(lines, "\n")
-	if len(tooltip) > maxTooltipLength {
-		tooltip = tooltip[:maxTooltipLength]
-	}
+	tooltip := buildTooltip(header, entries)
 
 	if tooltip != t.lastTooltip {
 		systray.SetTooltip(tooltip)
@@ -179,22 +175,65 @@ func (t *trayMenu) refresh() {
 	}
 }
 
-func describeTargets(targets []string, maxLength int) string {
-	if len(targets) == 0 {
-		return "(unmapped)"
+// tooltipEntry is one slider's line in the tray tooltip
+type tooltipEntry struct {
+	targets []string
+	volume  string
+}
+
+// names get shortened step by step until every slider fits in the tooltip
+var tooltipNameLengths = []int{12, 8, 5}
+
+// buildTooltip lists each slider's volume under the header, within maxTooltipLength. with many sliders, names
+// are shortened until everything fits; if it still doesn't, it shows as many as fit and ends with "+N more".
+// entries are never cut mid-way, so every number shown is complete
+func buildTooltip(header string, entries []tooltipEntry) string {
+	for _, nameLength := range tooltipNameLengths {
+		if tooltip := joinTooltip(header, entries, nameLength); len(tooltip) <= maxTooltipLength {
+			return tooltip
+		}
 	}
 
-	names := make([]string, len(targets))
-	for idx, target := range targets {
-		names[idx] = strings.TrimSuffix(target, ".exe")
+	shortest := tooltipNameLengths[len(tooltipNameLengths)-1]
+
+	for shown := len(entries) - 1; shown >= 0; shown-- {
+		tooltip := joinTooltip(header, entries[:shown], shortest) + fmt.Sprintf("\n+%d more", len(entries)-shown)
+		if len(tooltip) <= maxTooltipLength {
+			return tooltip
+		}
 	}
 
-	result := strings.Join(names, ", ")
-	if len(result) > maxLength {
-		result = result[:maxLength-3] + "..."
+	return header
+}
+
+func joinTooltip(header string, entries []tooltipEntry, nameLength int) string {
+	tooltip := header
+	for _, entry := range entries {
+		tooltip += "\n" + shortTargetName(entry.targets, nameLength) + " " + entry.volume
 	}
 
-	return result
+	return tooltip
+}
+
+// shortTargetName gives a compact name for a slider's targets, e.g. "firefox+1" for firefox and brave
+func shortTargetName(targets []string, maxNameLength int) string {
+	name := strings.TrimSuffix(targets[0], ".exe")
+	switch strings.ToLower(name) {
+	case specialTargetTransformPrefix + specialTargetAllUnmapped:
+		name = "unmapped"
+	case specialTargetTransformPrefix + specialTargetCurrentWindow:
+		name = "current app"
+	}
+
+	if len(name) > maxNameLength {
+		name = name[:maxNameLength-1] + "~"
+	}
+
+	if len(targets) > 1 {
+		name += fmt.Sprintf("+%d", len(targets)-1)
+	}
+
+	return name
 }
 
 // formatVolume shows low volumes with a decimal so fine-grained curves are visible (e.g. "0.4%")

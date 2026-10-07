@@ -20,7 +20,7 @@ import (
 // is written in the background once the user pauses
 
 const (
-	maxSettingsSliders = 16
+	maxSettingsSliders = 64
 
 	// how long to wait after the last change before writing the config file
 	settingsSaveDelay = 400 * time.Millisecond
@@ -44,6 +44,10 @@ type settingsState struct {
 	Defaults settingsCurve    `json:"defaults"`
 	Sliders  []settingsSlider `json:"sliders"`
 	Version  string           `json:"version"`
+
+	// apps deej.unmapped leaves alone, and the apps currently playing audio (to pick from)
+	UnmappedExclude []string `json:"unmappedExclude"`
+	AudioApps       []string `json:"audioApps"`
 }
 
 type settingsPreset struct {
@@ -190,6 +194,9 @@ func (d *Deej) settingsState() settingsState {
 
 	state.Autostart.Supported = util.AutostartSupported()
 	state.Autostart.Enabled = autostartEnabled
+
+	state.UnmappedExclude = append([]string{}, config.UnmappedExclude()...)
+	state.AudioApps = d.sessions.processKeys()
 
 	for _, preset := range curvePresets {
 		state.Presets = append(state.Presets, settingsPreset{preset.Key, preset.Name, preset.Value, preset.Description})
@@ -389,6 +396,29 @@ func (d *Deej) setOption(name string, value string) error {
 	default:
 		return fmt.Errorf("unknown option %q", name)
 	}
+
+	return nil
+}
+
+// setUnmappedExclude replaces the list of apps that deej.unmapped leaves alone
+func (d *Deej) setUnmappedExclude(names []string) error {
+	names = normalizeProcessNames(names)
+
+	if len(names) > 100 {
+		return fmt.Errorf("too many apps")
+	}
+
+	for _, name := range names {
+		if len(name) > 260 || strings.ContainsAny(name, "\r\n") {
+			return fmt.Errorf("invalid app name %q", name)
+		}
+	}
+
+	// apply right away, then save in the background
+	d.config.SetUnmappedExclude(names)
+
+	// an empty list is written as [] rather than removing the key, which would also drop its comment
+	d.queueConfigEdits(0, configEdit{Path: []string{configKeyUnmappedExclude}, Value: names})
 
 	return nil
 }

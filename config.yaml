@@ -15,6 +15,10 @@ slider_mapping:
     - rocketleague.exe
   4: discord.exe
 
+# apps that deej.unmapped should leave alone (they keep whatever volume they have).
+# you can also manage this list from deej's settings window
+unmapped_exclude: []
+
 # set this to true if you want the controls inverted (i.e. top is 0%, bottom is 100%)
 invert_sliders: false
 

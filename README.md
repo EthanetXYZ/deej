@@ -4,6 +4,7 @@
 >
 > - **Slider sensitivity:** response curves make the bottom of each slider usable. With the original linear mapping, 10% on a slider is still loud; with the "Balanced" curve it's 1%. You can also cap each slider's maximum volume, either for all sliders or per slider.
 > - **Settings window:** left-click the tray icon (or run `deej.exe --settings`) to adjust sensitivity, COM port, noise reduction, inverted sliders and "Start with Windows". It shows each knob's live position and volume, and applies changes instantly.
+> - **Exclude apps from `deej.unmapped`:** list apps (like a media player) that `deej.unmapped` should leave alone, no "fake" slider needed. Manage the list from the settings window or `unmapped_exclude` in the config.
 > - **Auto-reconnect:** deej keeps running and reconnects when the board is unplugged, busy, or plugged in after deej starts, instead of quitting.
 > - **Sturdier startup:** deej no longer crashes when there's no audio device yet (e.g. over Remote Desktop), and finds `config.yaml` next to the exe even when launched from elsewhere.
 > - **Up to date:** builds with current Go and dependencies. Settings changed in the app are saved to `config.yaml` with your comments kept intact.

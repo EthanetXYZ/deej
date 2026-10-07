@@ -74,3 +74,39 @@ com_port: COM4
 
 	t.Logf("final config:\n%s", edited)
 }
+
+func TestEditConfigFileWritesLists(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "config.yaml")
+	original := "# apps to leave alone\nunmapped_exclude: []\n\ncom_port: COM4\n"
+	if err := os.WriteFile(path, []byte(original), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	read := func() []string {
+		t.Helper()
+		v := viper.New()
+		v.SetConfigFile(path)
+		if err := v.ReadInConfig(); err != nil {
+			t.Fatal(err)
+		}
+		return normalizeProcessNames(v.GetStringSlice(configKeyUnmappedExclude))
+	}
+
+	if err := editConfigFile(path, configEdit{Path: []string{configKeyUnmappedExclude}, Value: []string{"mpvnet.exe", "spotify.exe"}}); err != nil {
+		t.Fatal(err)
+	}
+
+	if got := read(); strings.Join(got, ",") != "mpvnet.exe,spotify.exe" {
+		t.Errorf("unmapped_exclude = %v", got)
+	}
+
+	// emptying the list keeps the key and its comment
+	if err := editConfigFile(path, configEdit{Path: []string{configKeyUnmappedExclude}, Value: []string{}}); err != nil {
+		t.Fatal(err)
+	}
+
+	edited, _ := os.ReadFile(path)
+	if len(read()) != 0 || !strings.Contains(string(edited), "# apps to leave alone\nunmapped_exclude: []") {
+		t.Errorf("emptied list wasn't written cleanly:\n%s", edited)
+	}
+}

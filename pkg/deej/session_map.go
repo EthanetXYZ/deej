@@ -3,6 +3,7 @@ package deej
 import (
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -334,9 +335,19 @@ func (m *sessionMap) applyTargetTransform(specialTargetName string) []string {
 
 	// get currently unmapped sessions
 	case specialTargetAllUnmapped:
-		targetKeys := make([]string, len(m.unmappedSessions))
-		for sessionIdx, session := range m.unmappedSessions {
-			targetKeys[sessionIdx] = session.Key()
+
+		// apps listed in unmapped_exclude are left alone. this is checked here rather than when sessions
+		// are scanned, so changing the list takes effect immediately
+		excluded := map[string]bool{}
+		for _, name := range m.deej.config.UnmappedExclude() {
+			excluded[name] = true
+		}
+
+		targetKeys := make([]string, 0, len(m.unmappedSessions))
+		for _, session := range m.unmappedSessions {
+			if !excluded[session.Key()] {
+				targetKeys = append(targetKeys, session.Key())
+			}
 		}
 
 		return targetKeys
@@ -382,6 +393,27 @@ func (m *sessionMap) clear() {
 	}
 
 	m.logger.Debug("Session map cleared")
+}
+
+// processKeys returns the sorted names of apps that currently have audio sessions
+// (leaving out master, system sounds, mic and whole devices)
+func (m *sessionMap) processKeys() []string {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	keys := []string{}
+	for key := range m.m {
+		if funk.ContainsString([]string{masterSessionName, systemSessionName, inputSessionName}, key) ||
+			deviceSessionKeyPattern.MatchString(key) {
+			continue
+		}
+
+		keys = append(keys, key)
+	}
+
+	sort.Strings(keys)
+
+	return keys
 }
 
 func (m *sessionMap) String() string {

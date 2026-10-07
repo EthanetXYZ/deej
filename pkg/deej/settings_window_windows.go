@@ -141,6 +141,9 @@ func (d *Deej) runSettingsWindow() {
 
 			fitWindowHeight(hwnd, int(contentHeight*pixelRatio+0.5), growOnly)
 		},
+		"deejSetUnmappedExclude": func(names []string) error {
+			return d.setUnmappedExclude(names)
+		},
 		"deejAction": func(name string) error {
 			return d.runAction(name)
 		},

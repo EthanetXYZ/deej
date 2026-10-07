@@ -5,6 +5,7 @@ import (
 	"path"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
@@ -29,6 +30,10 @@ type CanonicalConfig struct {
 	NoiseReductionLevel string
 
 	SliderSensitivity *sensitivityMap
+
+	// process names (lowercase) that deej.unmapped should leave alone. read and replaced from several
+	// goroutines, so it lives behind an atomic pointer (see UnmappedExclude and SetUnmappedExclude)
+	unmappedExclude atomic.Pointer[[]string]
 
 	logger             *zap.SugaredLogger
 	notifier           Notifier
@@ -63,6 +68,7 @@ const (
 	configKeyBaudRate            = "baud_rate"
 	configKeyNoiseReductionLevel = "noise_reduction"
 	configKeySliderSensitivity   = "slider_sensitivity"
+	configKeyUnmappedExclude     = "unmapped_exclude"
 
 	defaultCOMPort  = "COM4"
 	defaultBaudRate = 9600
@@ -304,6 +310,7 @@ func (cc *CanonicalConfig) populateFromVipers() error {
 	}
 
 	cc.SliderSensitivity = sensitivity
+	cc.SetUnmappedExclude(normalizeProcessNames(cc.userConfig.GetStringSlice(configKeyUnmappedExclude)))
 
 	cc.logger.Debug("Populated config fields from vipers")
 
@@ -316,4 +323,36 @@ func (cc *CanonicalConfig) onConfigReloaded() {
 	for _, consumer := range cc.reloadConsumers {
 		consumer <- true
 	}
+}
+
+// normalizeProcessNames lowercases and trims process names, dropping empty entries and duplicates
+func normalizeProcessNames(names []string) []string {
+	result := []string{}
+	seen := map[string]bool{}
+
+	for _, name := range names {
+		name = strings.ToLower(strings.TrimSpace(name))
+		if name == "" || seen[name] {
+			continue
+		}
+
+		seen[name] = true
+		result = append(result, name)
+	}
+
+	return result
+}
+
+// UnmappedExclude returns the process names that deej.unmapped should leave alone
+func (cc *CanonicalConfig) UnmappedExclude() []string {
+	if names := cc.unmappedExclude.Load(); names != nil {
+		return *names
+	}
+
+	return nil
+}
+
+// SetUnmappedExclude replaces the process names that deej.unmapped should leave alone
+func (cc *CanonicalConfig) SetUnmappedExclude(names []string) {
+	cc.unmappedExclude.Store(&names)
 }

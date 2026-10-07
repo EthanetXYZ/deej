@@ -174,6 +174,22 @@
 
   .colhead .center, .slider-row .center { justify-self: center; }
 
+  /* keep the column names visible while scrolling through lots of sliders */
+  .colhead {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--surface);
+    border-bottom: 1px solid var(--divider);
+  }
+
+  /* many sliders: tighter rows, names on one line, no mini bars */
+  #rows.dense .slider-row { padding-top: 3px; padding-bottom: 3px; }
+  #rows.dense svg.graph { width: 26px; height: 26px; border-radius: 5px; }
+  #rows.dense .name { display: flex; align-items: baseline; gap: 6px; }
+  #rows.dense .name .targets { flex: 1; }
+  #rows.dense .bars { display: none; }
+
   .slider-row {
     padding-top: 7px;
     padding-bottom: 7px;
@@ -347,6 +363,60 @@
 
   .option:nth-child(-n+2) { border-top: none; }
   .option:nth-child(odd) { border-right: 1px solid var(--divider); }
+  .option.wide { grid-column: 1 / -1; border-right: none; align-items: flex-start; }
+  .exclude-text { flex: 0 1 260px; }
+
+  .exclude {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 7px;
+    min-width: 0;
+  }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; justify-content: flex-end; }
+  .chips .none { color: var(--faint); font-size: 12px; }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 1px 4px 1px 9px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    font-size: 12px;
+  }
+
+  .chip button {
+    border: none;
+    background: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 0 4px;
+    border-radius: 999px;
+  }
+
+  .chip button:hover { color: var(--danger); }
+
+  .exclude-add { display: flex; gap: 6px; }
+
+  .exclude-add input {
+    font: inherit;
+    font-size: 12px;
+    color: var(--text);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 8px;
+    width: 220px;
+  }
+
+  .exclude-add input:focus { outline: none; border-color: var(--accent); }
+
   .option .label { font-weight: 600; }
   .option .hint { color: var(--muted); font-size: 11.5px; }
   .option select { min-width: 110px; padding: 3px 6px; }
@@ -355,6 +425,9 @@
     .options { grid-template-columns: 1fr; }
     .option:nth-child(2) { border-top: 1px solid var(--divider); }
     .option:nth-child(odd) { border-right: none; }
+    .option.wide { flex-direction: column; align-items: stretch; }
+    .exclude { align-items: stretch; }
+    .chips { justify-content: flex-start; }
   }
 
   .seg { display: inline-flex; gap: 3px; }
@@ -460,6 +533,20 @@
           <div class="hint">Launch deej when you log in</div>
         </div>
         <label class="switch"><input type="checkbox" id="autostart"><span class="track"></span></label>
+      </div>
+      <div class="option wide">
+        <div class="exclude-text">
+          <div class="label">Not controlled by deej.unmapped</div>
+          <div class="hint">These apps keep their own volume, even with a slider set to deej.unmapped</div>
+        </div>
+        <div class="exclude">
+          <div id="exclude-chips" class="chips"></div>
+          <form id="exclude-form" class="exclude-add">
+            <input id="exclude-input" list="audio-apps" placeholder="App name, e.g. mpvnet.exe" autocomplete="off" spellcheck="false">
+            <datalist id="audio-apps"></datalist>
+            <button class="btn" type="submit">Add</button>
+          </form>
+        </div>
       </div>
     </div>
   </div>
@@ -755,8 +842,11 @@
     setText(row.volOut, fmtVolume(realVolume));
   }
 
+  const DENSE_AFTER = 8; // sliders before switching to the compact layout
+
   function renderRows() {
     const keys = ["default", ...state.sliders.map(s => s.index)];
+    rowsEl.classList.toggle("dense", state.sliders.length > DENSE_AFTER);
 
     for (const [key, row] of rows) {
       if (!keys.includes(key)) {
@@ -858,7 +948,63 @@
     });
   }
 
+  // ---------- apps excluded from deej.unmapped ----------
+
+  const excludeChips = $("#exclude-chips");
+  const excludeInput = $("#exclude-input");
+  const audioAppsList = $("#audio-apps");
+  let excluded = [];
+  let excludeHoldUntil = 0;
+
+  // "mpvnet" -> "mpvnet.exe", since audio sessions are named after the executable
+  function normalizeApp(name) {
+    name = name.trim().toLowerCase();
+    if (name && !name.includes(".")) name += ".exe";
+    return name;
+  }
+
+  async function saveExcluded(list) {
+    excluded = list;
+    excludeHoldUntil = Date.now() + HOLD_MS;
+    renderExcluded();
+    await call("deejSetUnmappedExclude", list);
+  }
+
+  $("#exclude-form").addEventListener("submit", e => {
+    e.preventDefault();
+    const name = normalizeApp(excludeInput.value);
+    excludeInput.value = "";
+    if (!name || excluded.includes(name)) return;
+    saveExcluded([...excluded, name]);
+  });
+
+  excludeChips.addEventListener("click", e => {
+    const button = e.target.closest("button[data-app]");
+    if (button) saveExcluded(excluded.filter(app => app !== button.dataset.app));
+  });
+
+  function renderExcluded() {
+    const html = excluded.length
+      ? excluded.map(app => `<span class="chip">${esc(app)}<button type="button" data-app="${esc(app)}" title="Remove">×</button></span>`).join("")
+      : `<span class="none">No apps excluded</span>`;
+    if (excludeChips.dataset.html !== html) {
+      excludeChips.innerHTML = html;
+      excludeChips.dataset.html = html;
+    }
+
+    // suggest apps that are playing audio right now
+    const suggestions = (state ? state.audioApps : []).filter(app => !excluded.includes(app));
+    const options = suggestions.map(app => `<option value="${esc(app)}">`).join("");
+    if (audioAppsList.dataset.html !== options) {
+      audioAppsList.innerHTML = options;
+      audioAppsList.dataset.html = options;
+    }
+  }
+
   function renderOptions() {
+    if (Date.now() >= excludeHoldUntil) excluded = state.unmappedExclude || [];
+    renderExcluded();
+
     const s = state.status;
     const status = $("#status");
     let cls = "pill", text = "Connecting…";
