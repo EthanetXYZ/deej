@@ -1,0 +1,3 @@
+com_port: [COM3]
+baud_rate: {a: 1}
+slider_mapping: [master]

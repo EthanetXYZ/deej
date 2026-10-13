@@ -1,0 +1,5 @@
+slider_mapping:
+  foo: chrome.exe
+  "01": a.exe
+  -1: b.exe
+  1.5: c.exe

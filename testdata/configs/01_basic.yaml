@@ -1,0 +1,6 @@
+slider_mapping:
+  0: master
+  1: chrome.exe
+  3:
+    - a.exe
+    - b.exe

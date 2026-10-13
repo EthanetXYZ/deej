@@ -1,0 +1,24 @@
+[workspace]
+resolver = "3"
+members = ["crates/deej-core", "crates/deej-audio", "crates/deej-serial", "crates/deej-platform", "app/src-tauri"]
+
+[workspace.package]
+version = "1.0.0"
+edition = "2024"
+rust-version = "1.85"
+license = "MIT"
+
+[workspace.dependencies]
+saphyr-parser = "0.2.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2.0"
+tracing = "0.1"
+tempfile = "3"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "unwind"
+strip = true

@@ -1,0 +1,5 @@
+slider_mapping:
+  09: a.exe
+  +3: b.exe
+  " 4": c.exe
+  5 : d.exe

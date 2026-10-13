@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+/* Windows 11 (Fluent) inspired tokens. Dark is the default theme; [data-theme="light"] overrides them. */
+@theme {
+  --color-surface: #202020;
+  --color-sidebar: #1c1c1c;
+  --color-card: #2b2b2b;
+  --color-card-hover: #323232;
+  --color-control: #383838;
+  --color-control-hover: #3f3f3f;
+  --color-border: #ffffff14;
+  --color-border-strong: #ffffff24;
+  --color-text: #ffffff;
+  --color-text-muted: #ffffffc4;
+  --color-text-subtle: #ffffff8a;
+  --color-accent: #60cdff;
+  --color-accent-hover: #5ab9e6;
+  --color-accent-soft: #60cdff26;
+  --color-on-accent: #000000;
+  --color-success: #6ccb5f;
+  --color-warning: #fce100;
+  --color-danger: #ff99a4;
+  --font-sans: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Cascadia Mono", Consolas, monospace;
+}
+
+:root[data-theme="light"] {
+  --color-surface: #f3f3f3;
+  --color-sidebar: #ebebeb;
+  --color-card: #fbfbfb;
+  --color-card-hover: #f6f6f6;
+  --color-control: #ffffff;
+  --color-control-hover: #f9f9f9;
+  --color-border: #0000000f;
+  --color-border-strong: #00000024;
+  --color-text: #1a1a1a;
+  --color-text-muted: #1a1a1ac4;
+  --color-text-subtle: #1a1a1a8a;
+  --color-accent: #005fb8;
+  --color-accent-hover: #196ebf;
+  --color-accent-soft: #005fb81f;
+  --color-on-accent: #ffffff;
+  --color-success: #0f7b0f;
+  --color-warning: #9d5d00;
+  --color-danger: #c42b1c;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 20px;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  overflow: hidden;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-text);
+  outline-offset: 1px;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border: 4px solid transparent;
+  border-radius: 6px;
+  background-clip: padding-box;
+}
+
+/* Fluent slider: thin track, accent fill up to the value (--fill), ringed thumb whose dot grows on hover */
+.fluent-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 20px;
+  background: transparent;
+  cursor: pointer;
+  --fill: 0%;
+}
+.fluent-range::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(to right, var(--color-accent) var(--fill), var(--color-text-subtle) var(--fill));
+}
+.fluent-range:disabled::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, var(--color-text-subtle) var(--fill), var(--color-border-strong) var(--fill));
+}
+.fluent-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: -8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--color-accent) 0 5px, var(--color-control) 5.5px);
+  box-shadow: 0 0 0 1px var(--color-border-strong);
+  transition: background 120ms ease;
+}
+.fluent-range:hover::-webkit-slider-thumb {
+  background: radial-gradient(circle, var(--color-accent) 0 6px, var(--color-control) 6.5px);
+}
+.fluent-range:active::-webkit-slider-thumb {
+  background: radial-gradient(circle, var(--color-accent) 0 4px, var(--color-control) 4.5px);
+}
+.fluent-range:disabled {
+  cursor: default;
+}
+.fluent-range:disabled::-webkit-slider-thumb {
+  background: radial-gradient(circle, var(--color-text-subtle) 0 5px, var(--color-control) 5.5px);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+.toast-in {
+  animation: toast-in 160ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast-in {
+    animation: none;
+  }
+}

@@ -1,0 +1,43 @@
+# process names are case-insensitive
+# you can use 'master' to indicate the master channel, or a list of process names to create a group
+# you can use 'mic' to control your mic input level (uses the default recording device)
+# you can use 'deej.unmapped' to control all apps that aren't bound to any slider (this ignores master, system, mic and device-targeting sessions)
+# windows only - you can use 'deej.current' to control the currently active app (whether full-screen or not)
+# windows only - you can use a device's full name, i.e. "Speakers (Realtek High Definition Audio)", to bind it. this works for both output and input devices
+# windows only - you can use 'system' to control the "system sounds" volume
+# important: slider indexes start at 0, regardless of which analog pins you're using!
+slider_mapping:
+  0: master
+  1: chrome.exe
+  2: spotify.exe
+  3:
+    - pathofexile_x64.exe
+    - rocketleague.exe
+  4: discord.exe
+
+# apps that deej.unmapped should leave alone (they keep whatever volume they have).
+# you can also manage this list from deej's settings window
+unmapped_exclude: []
+
+# set this to true if you want the controls inverted (i.e. top is 0%, bottom is 100%)
+invert_sliders: false
+
+# settings for connecting to the arduino board
+com_port: COM4
+baud_rate: 9600
+
+# adjust the amount of signal noise reduction depending on your hardware quality
+# supported values are "low" (excellent hardware), "default" (regular hardware) or "high" (bad, noisy hardware)
+noise_reduction: default
+
+# slider sensitivity - controls how a slider's position is turned into a volume level.
+# you can also change all of this from deej's tray icon (right-click -> Slider sensitivity).
+# - curve: 1 is linear (10% slider = 10% volume). higher values give you finer control at low volumes,
+#   which helps a lot if your sliders feel too loud near the bottom. 2 is a good starting point.
+#   you can use a number between 0.2 and 6, or a preset name: linear, gentle, balanced, fine, very_fine
+# - max_volume: the volume (1-100) a slider reaches at the very top, handy to keep an app from getting too loud
+# "default" applies to all sliders, and you can override it per slider using its index
+slider_sensitivity:
+  default:
+    curve: 1
+    max_volume: 100

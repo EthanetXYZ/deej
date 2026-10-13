@@ -1,0 +1,4 @@
+slider_mapping:
+  010: a.exe
+  0x2: b.exe
+  1_0: c.exe

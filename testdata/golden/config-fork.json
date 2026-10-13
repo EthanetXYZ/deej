@@ -1,0 +1,866 @@
+[
+  {
+    "file": "01_basic.yaml",
+    "slider_mapping": {
+      "0": [
+        "master"
+      ],
+      "1": [
+        "chrome.exe"
+      ],
+      "3": [
+        "a.exe",
+        "b.exe"
+      ]
+    },
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "02_spaces.yaml",
+    "slider_mapping": {
+      "0": [
+        "Speakers (Realtek High Definition Audio)"
+      ],
+      "1": [
+        "chrome.exe firefox.exe"
+      ]
+    },
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "03_empty.yaml",
+    "slider_mapping": {
+      "0": [],
+      "1": [],
+      "2": [
+        "x.exe"
+      ]
+    },
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "04_badkeys.yaml",
+    "slider_mapping": {
+      "-1": [
+        "b.exe"
+      ],
+      "0": [
+        "chrome.exe"
+      ],
+      "1": [
+        "a.exe"
+      ]
+    },
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    },
+    "nondeterministic_mapping": true
+  },
+  {
+    "file": "05_yes.yaml",
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "06_strtrue.yaml",
+    "invert_sliders": true,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "07_on.yaml",
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "08_one.yaml",
+    "invert_sliders": true,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "09_types.yaml",
+    "invert_sliders": false,
+    "com_port": "3",
+    "baud_rate": 115200,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "10_negbaud.yaml",
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "11_case.yaml",
+    "slider_mapping": {
+      "0": [
+        "MASTER"
+      ]
+    },
+    "invert_sliders": false,
+    "com_port": "COM7",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "12_scalartypes.yaml",
+    "slider_mapping": {
+      "0": [
+        "5"
+      ],
+      "1": [
+        "true"
+      ],
+      "2": [
+        "1.5"
+      ]
+    },
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "13_dupkey.yaml",
+    "error": "While parsing config: yaml: unmarshal errors:\n  line 3: mapping key \"0\" already defined at line 2",
+    "invert_sliders": false,
+    "com_port": "",
+    "baud_rate": 0,
+    "noise_reduction": ""
+  },
+  {
+    "file": "14_mapping_scalar.yaml",
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "15_noise_case.yaml",
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "HIGH",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "16_invalid.yaml",
+    "error": "While parsing config: yaml: line 2: found a tab character that violates indentation",
+    "invert_sliders": false,
+    "com_port": "",
+    "baud_rate": 0,
+    "noise_reduction": ""
+  },
+  {
+    "file": "17_empty_file.yaml",
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "18_exclude_scalar.yaml",
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "unmapped_exclude": [
+      "mpvnet.exe"
+    ],
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "19_unknown.yaml",
+    "slider_mapping": {
+      "0": [
+        "master"
+      ]
+    },
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "20_misc.yaml",
+    "invert_sliders": true,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "21_flow.yaml",
+    "slider_mapping": {
+      "0": [
+        "master"
+      ],
+      "1": [
+        "a.exe",
+        "b.exe"
+      ]
+    },
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "22_crlf.yaml",
+    "slider_mapping": {
+      "0": [
+        "master"
+      ],
+      "1": [
+        "chrome.exe"
+      ]
+    },
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "23_bom.yaml",
+    "slider_mapping": {
+      "0": [
+        "master"
+      ]
+    },
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "24_null.yaml",
+    "slider_mapping": {
+      "0": [],
+      "1": []
+    },
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "25_sens.yaml",
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {
+        "curve": 2,
+        "max_volume": 0.8
+      },
+      "overrides": {
+        "1": {
+          "curve": 1.6
+        }
+      },
+      "error_count": 0
+    }
+  },
+  {
+    "file": "26_no.yaml",
+    "slider_mapping": {
+      "0": [
+        "no"
+      ],
+      "1": [
+        "off"
+      ]
+    },
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "27_numeric_key_forms.yaml",
+    "slider_mapping": {
+      "10": [
+        "c.exe"
+      ],
+      "2": [
+        "b.exe"
+      ],
+      "8": [
+        "a.exe"
+      ]
+    },
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "28_bool_y.yaml",
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "29_bool_quoted_yes.yaml",
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "30_bool_float.yaml",
+    "invert_sliders": true,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "31_baud_float.yaml",
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 115200,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "32_baud_string_float.yaml",
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 115200,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "33_baud_underscore.yaml",
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 1200,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "34_numeric_targets.yaml",
+    "slider_mapping": {
+      "0": [
+        "8"
+      ],
+      "1": [
+        "010"
+      ],
+      "2": [
+        "1.5"
+      ],
+      "3": [
+        "31"
+      ],
+      "4": [
+        "+Inf"
+      ]
+    },
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "35_mapping_null.yaml",
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "36_nested_list.yaml",
+    "slider_mapping": {
+      "0": []
+    },
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "37_map_target.yaml",
+    "slider_mapping": {
+      "0": []
+    },
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "38_whitespace.yaml",
+    "invert_sliders": false,
+    "com_port": "COM3",
+    "baud_rate": 9600,
+    "noise_reduction": " high",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "39_more_types.yaml",
+    "invert_sliders": true,
+    "com_port": "COM4",
+    "baud_rate": 1,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "40_exclude_list.yaml",
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "unmapped_exclude": [
+      "mpvnet.exe",
+      "5"
+    ],
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "41_exclude_scalar_spaces.yaml",
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "unmapped_exclude": [
+      "a.exe",
+      "b.exe"
+    ],
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "42_sensitivity_errors.yaml",
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {
+        "curve": 3
+      },
+      "overrides": {
+        "2": {
+          "max_volume": 0.5
+        }
+      },
+      "error_count": 4
+    }
+  },
+  {
+    "file": "43_prefs_merge.yaml",
+    "slider_mapping": {
+      "0": [
+        "master"
+      ],
+      "1": [
+        "chrome.exe",
+        "firefox.exe"
+      ],
+      "4": [
+        "discord.exe"
+      ]
+    },
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "44_upstream_default.yaml",
+    "slider_mapping": {
+      "0": [
+        "master"
+      ],
+      "1": [
+        "chrome.exe"
+      ],
+      "2": [
+        "spotify.exe"
+      ],
+      "3": [
+        "pathofexile_x64.exe",
+        "rocketleague.exe"
+      ],
+      "4": [
+        "discord.exe"
+      ]
+    },
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "default",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "45_fork_default.yaml",
+    "slider_mapping": {
+      "0": [
+        "master"
+      ],
+      "1": [
+        "chrome.exe"
+      ],
+      "2": [
+        "spotify.exe"
+      ],
+      "3": [
+        "pathofexile_x64.exe",
+        "rocketleague.exe"
+      ],
+      "4": [
+        "discord.exe"
+      ]
+    },
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "default",
+    "slider_sensitivity": {
+      "default": {
+        "curve": 1,
+        "max_volume": 1
+      },
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "46_hex_string_baud.yaml",
+    "invert_sliders": true,
+    "com_port": "COM4",
+    "baud_rate": 115200,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "47_string_underscore_baud.yaml",
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 115200,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "48_scalar_resolution.yaml",
+    "slider_mapping": {
+      "0": [
+        "9"
+      ],
+      "1": [
+        "-16"
+      ],
+      "2": [
+        "5"
+      ],
+      "3": [
+        "15"
+      ],
+      "4": [
+        "5"
+      ],
+      "5": [
+        "1000"
+      ],
+      "6": [
+        "2020-01-02 00:00:00 +0000 UTC"
+      ],
+      "7": [
+        "0.5"
+      ]
+    },
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "49_key_forms.yaml",
+    "slider_mapping": {
+      "0": [
+        "c.exe"
+      ],
+      "3": [
+        "b.exe"
+      ],
+      "5": [
+        "d.exe"
+      ],
+      "9": [
+        "a.exe"
+      ]
+    },
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "50_null_scalars.yaml",
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "51_wrong_shapes.yaml",
+    "invert_sliders": false,
+    "com_port": "",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  },
+  {
+    "file": "52_key_case_dup.yaml",
+    "slider_mapping": {
+      "1": [
+        "chrome.exe"
+      ]
+    },
+    "invert_sliders": false,
+    "com_port": "COM4",
+    "baud_rate": 9600,
+    "noise_reduction": "",
+    "slider_sensitivity": {
+      "default": {},
+      "overrides": {},
+      "error_count": 0
+    }
+  }
+]

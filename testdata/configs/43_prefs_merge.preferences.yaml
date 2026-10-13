@@ -1,0 +1,6 @@
+slider_mapping:
+  1:
+    - chrome.exe
+    - firefox.exe
+    - ""
+  4: discord.exe

@@ -1,0 +1,6 @@
+slider_sensitivity:
+  default:
+    curve: balanced
+    max_volume: 80%
+  1:
+    curve: 1.6

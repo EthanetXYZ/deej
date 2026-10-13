@@ -1,0 +1,3 @@
+# fixtures must stay byte-exact (some test CRLF line endings and a BOM on purpose)
+testdata/** -text
+*.sh text eol=lf

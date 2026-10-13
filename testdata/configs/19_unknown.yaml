@@ -1,0 +1,4 @@
+slider_mapping:
+  0: master
+some_unknown_key: 42
+process_refresh_frequency: 5

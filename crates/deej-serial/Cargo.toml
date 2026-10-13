@@ -1,0 +1,16 @@
+[package]
+name = "deej-serial"
+description = "Serial connection to the deej board: open, read, reconnect, diagnostics"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+deej-core = { path = "../deej-core" }
+serialport = { version = "4.10", default-features = false }
+serde.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
