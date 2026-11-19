@@ -164,9 +164,11 @@ fn run(rx: Receiver<Msg>, tx: Sender<Msg>, sink: EventSink) {
 
 struct Endpoint {
     info: EndpointInfo,
+    device: IMMDevice,
     volume: IAudioEndpointVolume,
     volume_callback: IAudioEndpointVolumeCallback,
-    /// Playback devices only: their app sessions.
+    /// Playback devices only: the long-lived manager that delivers session-created notifications. Never enumerate
+    /// sessions on it after the first time (see `scan_sessions`).
     sessions: Option<(IAudioSessionManager2, IAudioSessionNotification)>,
 }
 
@@ -579,12 +581,19 @@ impl Engine {
                 muted: volume.GetMute()?.as_bool(),
             };
 
-            let mut endpoint = Endpoint { info, volume, volume_callback: callback, sessions: None };
+            let mut endpoint =
+                Endpoint { info, device: device.clone(), volume, volume_callback: callback, sessions: None };
 
             if flow == Flow::Render {
                 let manager: IAudioSessionManager2 = device.Activate(CLSCTX_ALL, None)?;
                 let notifier = callbacks::session_notifier(self.tx.clone(), id.clone());
                 manager.RegisterSessionNotification(&notifier)?;
+                // Windows only sends session-created notifications once the manager has been enumerated, so do
+                // it exactly once here. Every later enumeration goes through a temporary manager: each one on
+                // this long-lived manager leaves state behind in the Windows Audio service, which then leaks
+                // kernel memory (ETW registrations, held until deej exits) on every volume change, in proportion
+                // to how many enumerations came before.
+                let _ = manager.GetSessionEnumerator();
                 endpoint.sessions = Some((manager, notifier));
             }
 
@@ -626,18 +635,16 @@ impl Engine {
         endpoint_id: &str,
         names: &mut Option<HashMap<u32, String>>,
     ) -> windows_core::Result<()> {
-        let Some(manager) = self
-            .endpoints
-            .iter()
-            .find(|e| e.info.id == endpoint_id)
-            .and_then(|e| e.sessions.as_ref())
-            .map(|(m, _)| m.clone())
+        let Some(device) =
+            self.endpoints.iter().find(|e| e.info.id == endpoint_id && e.sessions.is_some()).map(|e| e.device.clone())
         else {
             return Ok(());
         };
 
-        // SAFETY: enumerating sessions on a live session manager. Enumerating also makes Windows start sending
-        // session-created notifications for this device (it doesn't until the enumerator was used once)
+        // A temporary manager, released at the end of this scan: enumerating on the long-lived one would make
+        // the Windows Audio service leak kernel memory (see add_or_update_endpoint).
+        // SAFETY: activating and enumerating on a live device, on the engine thread
+        let manager: IAudioSessionManager2 = unsafe { device.Activate(CLSCTX_ALL, None)? };
         let enumerator = unsafe { manager.GetSessionEnumerator()? };
         let count = unsafe { enumerator.GetCount()? };
 
