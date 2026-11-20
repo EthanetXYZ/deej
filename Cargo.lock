@@ -664,7 +664,7 @@ dependencies = [
 
 [[package]]
 name = "deej-audio"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "deej-core",
  "deej-platform",
@@ -678,7 +678,7 @@ dependencies = [
 
 [[package]]
 name = "deej-core"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "saphyr-parser",
  "serde",
@@ -690,7 +690,7 @@ dependencies = [
 
 [[package]]
 name = "deej-next"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "deej-audio",
  "deej-core",
@@ -713,7 +713,7 @@ dependencies = [
 
 [[package]]
 name = "deej-platform"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "tracing",
  "windows 0.62.2",
@@ -721,7 +721,7 @@ dependencies = [
 
 [[package]]
 name = "deej-serial"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "deej-core",
  "serde",
